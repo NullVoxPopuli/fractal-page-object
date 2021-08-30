@@ -6646,6 +6646,11 @@ documentation@^13.2.5:
     "@vue/compiler-sfc" "^3.0.11"
     vue-template-compiler "^2.6.12"
 
+dom-element-descriptors@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/dom-element-descriptors/-/dom-element-descriptors-0.1.1.tgz#9baf3ee69968fe844bab8d3a1d31143ac3880169"
+  integrity sha512-VZd+2az2aEGrbD4OKXNHszW5yvbYl6TXayfFyWJj3WlzdbhjJm3rD3OoqBKFZ8xwGHTMLJcTjmWMFZ3QkK/QuA==
+
 domain-browser@^1.1.1:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/domain-browser/-/domain-browser-1.2.0.tgz#3d31f50191a6749dd1375a7f522e823d42e54eda"

@@ -4,6 +4,30 @@ import DOMQuery from './-private/dom-query';
 import createProxy from './-private/create-proxy';
 import { DOM_QUERY, CLONE_WITH_INDEX } from './-private/types';
 import type { PageObjectConstructor } from './-private/types';
+import {
+  IDOMElementDescriptor,
+  registerDescriptorData,
+} from 'dom-element-descriptors';
+
+/**
+ * Descriptor data implemented by a {@link DOMQuery} -- used by
+ * {@link PageObject} to "implement" {@link IDOMElementDescriptor}
+ */
+class DOMQueryDesctiptorData {
+  constructor(private getQuery: () => DOMQuery) {}
+
+  get element(): Element | null {
+    return this.getQuery().query();
+  }
+
+  get elements(): Element[] {
+    return this.getQuery().queryAll();
+  }
+
+  get description(): string {
+    return this.getQuery().selectorArray.toString();
+  }
+}
 
 /**
  * This class implements all the basic page object functionality, and all page
@@ -87,7 +111,10 @@ import type { PageObjectConstructor } from './-private/types';
  * let page = new Page('.container');
  * page.list.elements; // rootElement.querySelectorAll('.container .list')
  */
-export default class PageObject extends ArrayStub {
+export default class PageObject
+  extends ArrayStub
+  implements IDOMElementDescriptor
+{
   /**
    * This page object's single matching DOM element -- the first DOM element
    * matching this page object's query if this page object does not have an
@@ -188,6 +215,11 @@ export default class PageObject extends ArrayStub {
     private rootElement: Element | null = null
   ) {
     super();
-    return createProxy(this);
+    let obj = createProxy(this);
+    registerDescriptorData(
+      obj,
+      new DOMQueryDesctiptorData(() => this[DOM_QUERY])
+    );
+    return obj;
   }
 }

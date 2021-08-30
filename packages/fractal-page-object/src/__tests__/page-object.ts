@@ -2,6 +2,12 @@ import { describe, afterEach, test, expect } from '@jest/globals';
 import { PageObject, setRoot } from '..';
 import { resetRoot } from '../-private/root';
 import { DOM_QUERY, CLONE_WITH_INDEX } from '../-private/types';
+import {
+  resolveDOMElement,
+  resolveDOMElements,
+  resolveDescription,
+} from 'dom-element-descriptors';
+import selector from '../selector';
 
 describe('PageObject', () => {
   afterEach(() => resetRoot());
@@ -663,6 +669,63 @@ describe('PageObject', () => {
       let page2 = new Page('div');
 
       expect(page2.map((o) => o.element.id)).toEqual(['div1']);
+    });
+  });
+
+  describe('dom-element-descriptors integration', () => {
+    it('works', () => {
+      document.body.innerHTML = '<div id="div1"></div><div id="div2"></div>';
+      let [div1, div2] = Array.from(document.body.children);
+
+      class Page extends PageObject {
+        divs = selector('div');
+      }
+      let page = new Page();
+
+      expect(resolveDOMElement(page.divs)).toEqual(div1);
+      expect(resolveDOMElements(page.divs)).toEqual([div1, div2]);
+    });
+
+    it('evaluates the root lazily', () => {
+      document.body.innerHTML = [
+        '<div id="div1"></div>',
+        '<span id="root">',
+        '<div id="div2"></div>',
+        '<div id="div3"></div>',
+        '</span>',
+      ].join('');
+      let [div1, root] = Array.from(document.body.children);
+      let [div2, div3] = Array.from(root.children);
+
+      class Page extends PageObject {
+        divs = selector('div');
+      }
+      let page = new Page();
+
+      expect(resolveDOMElement(page.divs)).toEqual(div1);
+      expect(resolveDOMElements(page.divs)).toEqual([div1, div2, div3]);
+
+      setRoot(root);
+      expect(resolveDOMElement(page.divs)).toEqual(div2);
+      expect(resolveDOMElements(page.divs)).toEqual([div2, div3]);
+    });
+
+    it('implements a description', () => {
+      class Page extends PageObject {
+        divs = selector(
+          'div',
+          class extends PageObject {
+            spans = selector('span');
+          }
+        );
+      }
+      let page = new Page();
+
+      expect(resolveDescription(page)).toEqual('');
+      expect(resolveDescription(page.divs)).toEqual('div');
+      expect(resolveDescription(page.divs[0].spans[1])).toEqual(
+        'div[0] span[1]'
+      );
     });
   });
 });

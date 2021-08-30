@@ -1,6 +1,7 @@
 import PageObjectFactory from './factory';
 import type PageObject from '../page-object';
 import { CLONE_WITH_INDEX } from './types';
+import { resolveDOMElements } from 'dom-element-descriptors';
 
 /**
  * Create a proxy wrapping a {@link PageObject} and implementing array
@@ -41,7 +42,7 @@ export default function createProxy(pageObject: PageObject): PageObject {
         // PageObject with its parent set to an integer (instead of a page
         // object parent).
         let arrayProp = prop as keyof Array<unknown>;
-        let elements = pageObject.elements;
+        let elements = resolveDOMElements(pageObject);
         let children = elements.map((_e, i) => pageObject[CLONE_WITH_INDEX](i));
         let value = children[arrayProp];
         if (typeof value === 'function') {
